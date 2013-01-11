@@ -9,7 +9,7 @@ var ptPerCard = 10; //points per reward card
 var xhr = new XMLHttpRequest();
 //var url = 'http://172.22.41.63/Pigeon/MA/00_Demo/R0.2/RewardCard/Server/index.php'; 
 //var imgUrl = 'http://172.22.41.63/Pigeon/MA/00_Demo/R0.2/RewardCard/Server/img/'; 
-var url = 'http://api.RewardCard2.kuopo.twbbs.org/index.php'; 
+var url = 'http://api.RewardCard2.kuopo.twbbs.org/index.php';
 var imgUrl = 'http://api.RewardCard2.kuopo.twbbs.org/img/'; 
 // ----------------
 
@@ -40,8 +40,8 @@ function removeClass(id)
 
 function queryServer()
 {   
-    var qs = '/' + g_uniqueId;
-        
+    var qs = '?id=' + g_uniqueId;
+    
     if(xhr)
     {
         xhr.open("GET", url+qs, true);
@@ -63,12 +63,12 @@ function queryServerHandler(evtXHR)
             var response = xhr.responseText;
             response = JSON.parse(response);
             
-            if (!response['error'])
+            if (!response["error"])
                 showPoints(response[g_uniqueId]);
             else
             {
                 showPoints(0);
-                dprint(response['error'] + ' [' + response['id'] + ']');
+                dprint(response["error"] + ' [' + response["id"] + ']');
             }
         }
         else
@@ -169,6 +169,23 @@ function getUniqueId()
 
 }
 
+function resultParser(result, errorStr)
+{
+    var successStr = "200:";
+    
+    if (result.search(successStr) == -1)
+    {
+        dprint(errorStr + " Error: " + result);
+        return false;
+    }
+    else
+    {
+        index = result.indexOf(successStr);
+        ret = result.substring(index+successStr.length, result.length);
+        return ret;
+    }
+}
+
 function onloadBody()
 {   
     setCss();
@@ -176,8 +193,8 @@ function onloadBody()
     g_uniqueId = getUniqueId();
     queryServer();
 
-    ret = pigeon.subscribeChannel('demo_card', "messaging_cb");
-    resultParser(ret, "subsribe channel demo_card");
+    ret = pigeon.subscribeChannel('CH-'+g_uniqueId, "messaging_cb");
+    resultParser(ret, "subsribe channel CH-"+g_uniqueId);
 
     dprint("[" + g_uniqueId + "]");
 }

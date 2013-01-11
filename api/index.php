@@ -6,49 +6,20 @@
     
     $request_method = $_SERVER['REQUEST_METHOD'];
     #echo $request_method;
-    
-    if ($request_method == 'POST')  // now the POST method is fade out, no one use this method
+
+    if ($request_method == 'PUT')
     {
-        $body = file_get_contents("php://input");
-        $xml = simplexml_load_string($body);
-        $cardId = (string)$xml->id;
-        #echo $cardId;
-        
-        $sql = "SELECT * FROM cards WHERE id='$cardId'";
-        $result = mysql_query($sql) or die('Invalid query: ' . mysql_error());
-        $num_rows = mysql_num_rows($result);
-        
-        if ($row = mysql_fetch_row($result)) 
-        {
-            $points = $row[1];
-            
-            $array = array(
-                "id" => $cardId,
-                "points" => $points,
-            );
-            $ret = json_encode($array);    
-        }
-        else
-        {
-            $array = array(
-                "id" => $cardId,
-                "error" => "401 User Unauthorized",
-            );
-            $ret = json_encode($array);        
-        }
-        
-        echo $ret;
-        mysql_free_result($result);    
-    }
+        $key_id = 'id';
+        $key_point = 'point';
     
-    else if ($request_method == 'PUT')
-    {
-        $requestPath = $_SERVER['PHP_SELF'];
-        $pos = strpos($requestPath, 'index.php');
-        $requestPath = substr($requestPath, $pos+strlen('index.php'));
-        $tokens = explode('/', $requestPath);
-        $cardId = $tokens[sizeof($tokens)-2];
-        $pointsValue = $tokens[sizeof($tokens)-1];
+        $postData = file_get_contents("php://input");
+        $obj = json_decode($postData);
+        
+        #echo $obj->$key_id;
+        #echo $obj->$key_point;
+
+        $cardId = $obj->$key_id;
+        $pointsValue = $obj->$key_point;
         
         if ((!strcmp($cardId, '')) or (!strcmp($pointsValue, '')))
         {
@@ -78,15 +49,26 @@
             echo header("HTTP/1.1 503 Service Unavailable");
             echo "Update database failed \n";
         }
+
     }
     
     else if ($request_method == 'GET')
     {
-        $requestPath = $_SERVER['PHP_SELF'];
-        $pos = strpos($requestPath, 'index.php');
-        $requestPath = substr($requestPath, $pos+strlen('index.php'));
-        $tokens = explode('/', $requestPath);
-        $cardId = $tokens[sizeof($tokens)-1];
+        $qs = $_SERVER['QUERY_STRING'];       
+        $value = explode("=", $qs);
+        if ($value[0] == 'id')
+            $cardId = $value[1];
+        else
+        {            
+            $array = array(
+                "id" => $cardId,
+                "error" => "Invalid Format",
+            );
+            $ret = json_encode($array);
+
+            echo $ret;
+        }
+
         
         $sql = "SELECT * FROM cards WHERE id='$cardId'";
         $result = mysql_query($sql) or die('Invalid query: ' . mysql_error());
@@ -99,7 +81,15 @@
         }
         else
         {
-            echo 'Invalid id';
+            #echo 'Invalid id';
+            
+            $array = array(
+                "id" => $cardId,
+                "error" => "Invalid Id",
+            );
+            $ret = json_encode($array);
+
+            echo $ret;
         }
         mysql_free_result($result); 
     }
