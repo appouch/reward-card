@@ -1,9 +1,9 @@
 <?php
 
-    $dbServer = "172.22.41.63";
+    $dbServer = "pigeondb.cs7e6xfyqwyi.us-west-1.rds.amazonaws.com";
     $dbName = "pigeonRewardCard";
-    $dbUser = "scannerApp";
-    $dbPwd = "scanner";
+    $dbUser = "airline";
+    $dbPwd = "airline123";
 
     if(!@mysql_connect($dbServer, $dbUser, $dbPwd))
         die("Connect to database $dbServer failed");
