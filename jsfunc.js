@@ -1,16 +1,21 @@
+document.write('<script type="text/javascript" src="cordova-2.5.0.js"></script>');
+document.write('<script type="text/javascript" src="pigeon-0.4.js"></script>');
+
 // global variables
 var g_account;
 var g_password;
 var g_uniqueId;
 var g_points = 0;
 
+var firstTime = true;
+
 var ptPerCard = 10; //points per reward card
 
 var xhr = new XMLHttpRequest();
-//var url = 'http://172.22.41.63/Pigeon/MA/00_Demo/R0.2/RewardCard/Server/index.php'; 
-//var imgUrl = 'http://172.22.41.63/Pigeon/MA/00_Demo/R0.2/RewardCard/Server/img/'; 
-var url = 'http://api.RewardCard2.kuopo.twbbs.org/index.php';
-var imgUrl = 'http://api.RewardCard2.kuopo.twbbs.org/img/'; 
+//var url = 'http://172.22.41.63/Pigeon/MA/00_Demo/R0.4/RewardCard/api/index.php'; 
+//var imgUrl = 'http://172.22.41.63/Pigeon/MA/00_Demo/R0.4/RewardCard/api/img/'; 
+var url = 'http://RewardCard4.pigeonmtk.twbbs.org/api/index.php'; 
+var imgUrl = 'http://RewardCard4.pigeonmtk.twbbs.org/api/img/'; 
 // ----------------
 
 function dprint(str)
@@ -79,6 +84,7 @@ function queryServerHandler(evtXHR)
     else
     {
         //console.log("currently the application is at" + xhr.readyState);
+		//alert("currently the application is at" + xhr.readyState);
     }
 } 
 
@@ -90,8 +96,16 @@ function showPoints(points)
     
     if (g_points != points)
     {
-        update = true;
-        g_points = points;
+		if (firstTime)
+		{
+			update = false;
+			firstTime = false;
+		}
+		else
+		{
+			update = true;
+		}
+		g_points = points;
     }
     
     // error
@@ -145,30 +159,50 @@ function showPoints(points)
     }    
 }
 
-function messaging_cb(channel, message)
+
+//---------------------------
+// msghub
+//---------------------------
+
+function messaging_success_cb(ret)
 {
-    dprint("in messaging_cb: " + message);
+	queryServer();
+}
+
+function messaging_eror_cb(ret)
+{
+	alert(ret);
+}
+
+function messaging_cb(ret)
+{
+	//ret = eval('(' + ret + ')');
+	//document.getElementById("div_log").innerHTML = "msg from [" + ret["channel"] + "]<br />";
     queryServer();
 }
 
+//---------------------------
+// get subscription id
+//---------------------------
 function getUniqueId()
 {
-    var uniqueId = pigeon.getSubscriptionId();
-    
-    if (uniqueId.search("200") == -1)
-    {
-        alert("getSubscriptionId Error: " + uniqueId);
-        return 0;
-    }
-    else
-    {
-        uniqueId = uniqueId.substring(uniqueId.indexOf(":")+1, uniqueId.length);
-        uniqueId = parseInt(uniqueId.substring(0, 8), 16);
-        return uniqueId;
-    }
-
+	pigeon.getSubscriptionId(getid_success_cb, getid_error_cb);
 }
 
+function getid_success_cb(ret)
+{
+	ret = eval('(' + ret + ')');
+	g_uniqueId = ret["mValues"]["Value"];
+	g_uniqueId = g_uniqueId.substring(0, 8);
+	
+	pigeon.subscribeChannel(messaging_success_cb, messaging_eror_cb, 'CH-'+g_uniqueId.toString(), messaging_cb);
+}
+
+function getid_error_cb(ret)
+{
+	alert(ret);
+}
+/*
 function resultParser(result, errorStr)
 {
     var successStr = "200:";
@@ -185,16 +219,15 @@ function resultParser(result, errorStr)
         return ret;
     }
 }
+*/
 
 function onloadBody()
 {   
     setCss();
+	document.addEventListener("deviceready", onDeviceReady, false);
+}
 
-    g_uniqueId = getUniqueId();
-    queryServer();
-
-    ret = pigeon.subscribeChannel('CH-'+g_uniqueId, "messaging_cb");
-    resultParser(ret, "subsribe channel CH-"+g_uniqueId);
-
-    dprint("[" + g_uniqueId + "]");
+function onDeviceReady()
+{
+    getUniqueId();
 }
