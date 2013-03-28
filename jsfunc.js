@@ -14,8 +14,8 @@ var ptPerCard = 10; //points per reward card
 var xhr = new XMLHttpRequest();
 //var url = 'http://172.22.41.63/Pigeon/MA/00_Demo/R0.4/RewardCard/api/index.php'; 
 //var imgUrl = 'http://172.22.41.63/Pigeon/MA/00_Demo/R0.4/RewardCard/api/img/'; 
-var url = 'http://RewardCard4.pigeonmtk.twbbs.org/api/index.php'; 
-var imgUrl = 'http://RewardCard4.pigeonmtk.twbbs.org/api/img/'; 
+var url = 'http://RewardCard4.pigeonaws.tk/api/index.php'; 
+var imgUrl = 'http://RewardCard4.pigeonaws.tk/api/img/'; 
 // ----------------
 
 function dprint(str)
