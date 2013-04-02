@@ -20,4 +20,4 @@
         die("The database is not avaliable.");
         
     //echo "Select database $dbName successfully! <br>";
-?> 
+?>
